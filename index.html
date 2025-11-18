@@ -853,7 +853,7 @@
             <span
               data-i18n="quizOpt1"
               data-ru="На той: Ариет зажёг своими не в тему танцами, Бегай понравилось 😂"
-              data-kg="Тойдон: Ариет темадан тышкары бийлеп, Бегайга жағып калган 😂"
+              data-kg="Тойдон: Ариет бир кызыктай бийлеп, Бегайга жағып калган 😂"
             >На той: Ариет зажёг своими не в тему танцами, Бегай понравилось 😂</span>
           </label>
           <label style="display:block; margin-bottom:4px;">
@@ -1218,29 +1218,21 @@
         if (link.href.includes('index') || link.href.includes('index-kg')) {
           saveMusicPosition();
         } else if (link.href.includes('2gis') || link.href.includes('map')) {
-          // Сохраняем позицию при переходе на карту (открывается в новой вкладке)
+          // Сохраняем позицию при переходе на карту
           saveMusicPosition();
-          // Помечаем, что это переход на карту
-          sessionStorage.setItem('wentToMap', 'true');
         }
       });
     });
     
     // Восстанавливаем музыку при возврате фокуса на вкладку
     window.addEventListener('focus', function() {
-      const wentToMap = sessionStorage.getItem('wentToMap');
-      if (wentToMap === 'true') {
-        sessionStorage.removeItem('wentToMap');
-        const savedTime = localStorage.getItem(MUSIC_STORAGE_KEY);
-        const wasPlaying = localStorage.getItem(MUSIC_PLAYING_KEY) === 'true';
-        if (savedTime && !Number.isNaN(parseFloat(savedTime)) && wasPlaying) {
-          bgMusic.currentTime = parseFloat(savedTime);
-          if (!isMusicPlaying) {
-            setTimeout(() => {
-              playMusic();
-            }, 100);
-          }
-        }
+      const savedTime = localStorage.getItem(MUSIC_STORAGE_KEY);
+      const wasPlaying = localStorage.getItem(MUSIC_PLAYING_KEY) === 'true';
+      if (savedTime && !Number.isNaN(parseFloat(savedTime)) && wasPlaying && !isMusicPlaying) {
+        bgMusic.currentTime = parseFloat(savedTime);
+        setTimeout(() => {
+          playMusic();
+        }, 200);
       }
     });
     
@@ -1252,24 +1244,24 @@
       }
     });
     
-    // При скрытии вкладки сохраняем позицию
+    // При скрытии вкладки останавливаем музыку и сохраняем позицию
     document.addEventListener('visibilitychange', function() {
       if (document.hidden) {
+        // Сохраняем позицию и останавливаем музыку
         saveMusicPosition();
+        if (isMusicPlaying) {
+          bgMusic.pause();
+        }
       } else {
-        // При возврате на вкладку проверяем, был ли переход на карту
-        const wentToMap = sessionStorage.getItem('wentToMap');
-        if (wentToMap === 'true') {
-          sessionStorage.removeItem('wentToMap');
-          const savedTime = localStorage.getItem(MUSIC_STORAGE_KEY);
-          const wasPlaying = localStorage.getItem(MUSIC_PLAYING_KEY) === 'true';
-          if (savedTime && !Number.isNaN(parseFloat(savedTime)) && wasPlaying) {
-            bgMusic.currentTime = parseFloat(savedTime);
-            if (!isMusicPlaying) {
-              setTimeout(() => {
-                playMusic();
-              }, 100);
-            }
+        // При возврате на вкладку восстанавливаем музыку с сохраненной позиции
+        const savedTime = localStorage.getItem(MUSIC_STORAGE_KEY);
+        const wasPlaying = localStorage.getItem(MUSIC_PLAYING_KEY) === 'true';
+        if (savedTime && !Number.isNaN(parseFloat(savedTime)) && wasPlaying) {
+          bgMusic.currentTime = parseFloat(savedTime);
+          if (!isMusicPlaying) {
+            setTimeout(() => {
+              playMusic();
+            }, 200);
           }
         }
       }
